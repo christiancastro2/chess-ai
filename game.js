@@ -1,37 +1,11 @@
-var config = {
-    draggable: true,
-    position: 'start',
-    moveSpeed: 'slow'
-  }
-  
-board = new ChessBoard('board1', config);
-game = new Chess();
-
-// while (!game.game_over()) {
-//     var moves = game.moves();
-//     var move = moves[Math.floor(Math.random() * moves.length)];
-//     game.move(move);
-//     board.position(game.fen());
-// }
-
-// RANDOM VS RANDOM
-
-// function makeRandomMove () {
-//     var possibleMoves = game.moves()
-  
-//     // exit if the game is over
-//     if (game.game_over()) return
-  
-//     var randomIdx = Math.floor(Math.random() * possibleMoves.length)
-//     game.move(possibleMoves[randomIdx])
-//     board.position(game.fen())
-  
-//     window.setTimeout(makeRandomMove, 500)
+// var config = {
+//     draggable: true,
+//     position: 'start',
+//     moveSpeed: 'slow'
 //   }
-
-//   window.setTimeout(makeRandomMove, 500)
-
-// VS RANDOM COMPUTER
+  
+// board = new ChessBoard('board1', config);
+game = new Chess();
 
 var board = null
 var game = new Chess()
@@ -134,46 +108,84 @@ function eval(game, move) {
     console.log(game.fen());
     let sum = 0;
     let fen = game.fen();
+    let rank = 7;
+    let file = 0;
     for (let i = 0; i < fen.length; i++) {
         switch(fen[i]) {
             case 'p':
-                sum += weights['p'];
+                sum += weights['p'] + pst_b['p'][rank][file];
+                file++;
                 break;
             case 'n':
-                sum += weights['n'];
+                sum += weights['n'] + pst_b['n'][rank][file];
+                file++;
                 break;
             case 'b':
-                sum += weights['b'];
+                sum += weights['b'] + pst_b['b'][rank][file];
+                file++;
                 break;
             case 'r': 
-                sum += weights['r'];
+                sum += weights['r'] + pst_b['r'][rank][file];
+                file++;
                 break;
             case 'q': 
-                sum += weights['q'];
+                sum += weights['q'] + pst_b['q'][rank][file];
+                file++;
                 break;
             case 'P':
-                sum -= weights['p'];
+                sum -= weights['p'] + pst_w['p'][rank][file];
+                file++;
                 break;
             case 'N':
-                sum -= weights['n'];
+                sum -= weights['n'] + pst_w['n'][rank][file];
+                file++;
                 break;
             case 'B':
-                sum -= weights['b'];
+                sum -= weights['b'] + pst_w['b'][rank][file];
+                file++;
                 break;
             case 'R': 
-                sum -= weights['r'];
+                sum -= weights['r'] + pst_w['r'][rank][file];
+                file++;
                 break;
             case 'Q': 
-                sum -= weights['q'];
+                sum -= weights['q'] + pst_w['q'][rank][file];
+                file++;
+                break;
+            case '1':
+                file += 1;
+                break;
+            case '2':
+                file += 2;
+                break;
+            case '3':
+                file += 3;
+                break;
+            case '4':
+                file += 4;
+                break;
+            case '5':
+                file += 5;
+                break;
+            case '6':
+                file += 6;
+                break;
+            case '7':
+                file += 7;
+                break;
+            case '8':
+                file += 8;
+                break;
+            case '/':
+                file = 0;
+                rank--;
                 break;
             default:
                 sum += 0;
                 break;
-
         }
     }
     game.load(oldFen);
-    console.log(sum);
     return sum;
 }
 
@@ -190,11 +202,21 @@ function makeBestMove () {
     let max = -1e6;
     let bestMove = 0;
     for (let i = 0; i < moves.length; i++) {
-        console.log(max);
-    if (eval(game, moves[i]) > max) {
-        max = eval(game, moves[i]);
-        bestMove = i;
+        // if (eval(game, moves[i]) > max) {
+        //     max = eval(game, moves[i]);
+        //     bestMove = i;
+        //     }
+        let sum = eval(game, moves[i]);
+        let oldFen = game.fen();
+        game.move(moves[i]);
+        let newMoves = game.moves();
+        for (let j = 0; j < newMoves.length; j++) {
+            if (eval(game, newMoves[j]) + sum > max) {
+                max = eval(game, newMoves[j]) + sum;
+                bestMove = i;
+            }
         }
+        game.load(oldFen);
     }
     game.move(moves[bestMove], { sloppy: true });
     board.position(game.fen());
